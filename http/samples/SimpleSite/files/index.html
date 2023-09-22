@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, world!</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    body {
+        background-color: #DFF6F0;
+        height: 100%;
+        width: 100%;
+    }
+
+    #content {
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        margin-left: 15%;
+        width: 70%;
+        overflow: hidden;
+    }
+
+    #bar {
+        display: flex;
+        flex-direction: column;
+        width: 10%;
+    }
+
+    .barButton {
+        display: block;
+        width: 100%;
+        text-align: center;
+        height: 25px;
+        background-color: white;
+        padding-top: 10px;
+    }
+
+    .barButton:hover {
+        background-color: #7E78D2;
+        cursor: pointer;
+    }
+
+    #common {
+        display: flex;
+        flex-direction: column;
+        width: 90%;
+        height: 100%;
+    }
+
+    #messages {
+        display: flex;
+        flex-direction: column;
+        background-color: #BBDBD1;
+        height: 90%;
+        width: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
+        padding: 5px 10px;
+    }
+
+    .message {
+        display: block;
+        height: auto;
+        float: left;
+        width: max-content;
+        border-radius: 20px;
+        border-top-left-radius: 0;
+        max-width: 80%;
+        min-width: 10%;
+        background-color: whitesmoke;
+        margin-top: 10px;
+        font-size: 16px;
+        padding: 5px 10px;
+        word-wrap: break-word;
+        word-break: break-all;
+    }
+
+    .self {
+        border-top-right-radius: 0;
+        border-top-left-radius: 20px;
+        margin-left: auto;
+    }
+
+    .messageSource {
+        display: block;
+        font-size: 18px;
+        color: #6F58C9;
+        font-weight: bold;
+    }
+
+    .messageTimestamp {
+        display: block;
+        font-size: 14px;
+        color: #b5b5b5;
+        float: right;
+    }
+
+    #newMessageArea {
+        display: flex;
+        flex-direction: row;
+        background-color: aquamarine;
+        height: 10%;
+        width: 100%;
+    }
+
+    textarea {
+        border: 0px;
+        border-radius: 5px;
+        padding: 5px 10px;
+        font-size: 16px;
+    }
+
+    textarea:focus {
+        outline: none;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        color: white;
+        background-color: #7E78D2;
+        cursor: pointer;
+        border: 0px;
+        border-radius: 10px;
+        font-size: 16px;
+    }
+
+    .btn:hover {
+        background-color: #6F58C9;
+    }
+
+    .ref:hover {
+        color: #6F58C9;
+        cursor: pointer;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    #newMessageText {
+        box-sizing: border-box;
+        border: 1px solid gainsboro;
+        padding: 5px 20px;
+        height: 100%;
+        width: 90%;
+        resize: none;
+    }
+
+    #sendMessageBtnArea {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 10%;
+    }
+
+</style>
+<body>
+    <div id="content">
+        <div id="bar">
+            <div class="barButton">Login</div>
+            <div class="barButton">Messages</div>
+            <div class="barButton">About</div>
+            <div class="barButton" onclick="logout()">Logout</div>
+        </div>
+        <div id="common">
+            <div id="messages">
+
+            </div>
+            <div id="newMessageArea">
+                <textarea id="newMessageText"></textarea>
+                <div id="sendMessageBtnArea">
+                    <button id="sendMessageBtn" class="btn" onclick="sendMessageBtnClicked()">Send</button>
+                    <input type="file" id="fileSetter" onchange="fileChanged()">
+                    <button id="setFileForSend" class="btn" onclick="document.getElementById('fileSetter').click()">
+                        File
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const dMessages = document.getElementById("messages");
+
+    class Message {
+        source = "";
+        timestamp = "";
+        message = "";
+        self = false;
+        div;
+
+        constructor(source, timestamp, message, self) {
+            this.source = source;
+            this.timestamp = timestamp;
+            this.message = message;
+            this.self = (self == "1" ? true : false);
+            this.div = document.createElement("div");
+            this.div.setAttribute("class", "message" + (this.self ? " self" : ""));
+            this.init();
+        }
+
+        init() {
+            this.div.innerHTML = "<div class=\"messageSource\">" + this.source + "</div><div>"
+                + this.message + "</div><div class=\"messageTimestamp\">" + this.timestamp + "</div>";
+        }
+    }
+
+    var messages = new Array();
+    
+    function fileChanged() {
+        var file = document.getElementById("fileSetter").value;
+        alert(file);
+    }
+    
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+    }
+
+
+    var ownId = "";
+
+    function getOwnLogin() {
+        var xml = new XMLHttpRequest();
+        xml.open("POST", window.location.href + "myLogin");
+        xml.onload = function () {
+            if (xml.status == 200) {
+                ownId = xml.response;
+            }
+        }
+    }
+
+    getOwnLogin();
+
+    function logout() {
+        var xml = new XMLHttpRequest();
+        xml.open("POST", window.location.href + "logout");
+        xml.send();
+        xml.onload = function () {
+            if (xml.status == 200) {
+                window.location.reload();
+            }
+        }
+    }
+
+    function sendMessageBtnClicked() {
+        var xml = new XMLHttpRequest();
+        xml.open("POST", window.location.href + "message");
+        xml.send(document.getElementById("newMessageText").value);
+        xml.onload = function () {
+            if (xml.status == 200) {
+                document.getElementById("newMessageText").value = "";
+                reqMessages();
+            }
+        }
+    }
+
+    function reqMessages() {
+        var xml = new XMLHttpRequest();
+        xml.open("POST", window.location.href + "allMessages");
+        xml.send("");
+        xml.onload = function () {
+            if (xml.status == 200) {
+                var data = xml.response.split("<!&!>");
+                for (let i = 0; i < data.length; ++i) {
+                    var msgData = data[i].split("<&!&>");
+                    console.log(msgData)
+                    if (msgData.length == 4) {
+                        var has = false;
+                        var msg = new Message(msgData[0], msgData[1].split(' ')[1], msgData[2], msgData[3]);
+                        for (let j = 0; j < messages.length; ++j) {
+                            if (messages[j].source == msg.source && messages[j].timestamp == msg.timestamp && messages[j].message == msg.message) {
+                                has = true;
+                                break;
+                            }
+                        }
+
+                        if (!has) {
+                            messages.push(msg);
+                            dMessages.appendChild(msg.div);
+                        }
+                    }
+                }
+            } else {
+                console.log(xml.status);
+            }
+        }
+    }
+
+    reqMessages();
+    var interval = setInterval(reqMessages, 3000);
+
+    function onMessagesScrolled() {
+        alert(1);
+    }
+
+    function onDocumentKeyPressed(event) {
+        if (event.key === "Enter") {
+            if (!event.ctrlKey) {
+                sendMessageBtnClicked();
+            } else {
+                document.getElementById("newMessageText").value += '\n';
+            }
+        }
+    }
+
+    document.addEventListener("keypress", onDocumentKeyPressed);
+    //.addEventListener("scroll", onMessagesScrolled);
+</script>
+</html>

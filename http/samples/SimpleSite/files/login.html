@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log in</title>
+</head>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100vh;
+        width: 100vw;
+    }
+
+    body {
+        background-color: #DFF6F0;
+        height: 100%;
+        width: 100%;
+    }
+
+    #content {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        margin-left: 15%;
+        width: 70%;
+        overflow: hidden;
+    }
+
+    #loginArea {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-end;
+        width: max-content;
+        height: max-content;
+        background-color: #BBDBD1;
+        border-radius: 20px;
+        padding: 30px 10px;
+    }
+
+    .loginAreaElement {
+        margin: 10px 20px;
+        float: right;
+    }
+
+    .registerEl {
+        display: none;
+    }
+
+    label {
+        color: #6F58C9;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    input {
+        border: 0px;
+        border-radius: 5px;
+        padding: 5px 10px;
+        font-size: 16px;
+    }
+
+    input:focus {
+        outline: none;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        color: white;
+        background-color: #7E78D2;
+        cursor: pointer;
+        border: 0px;
+        border-radius: 10px;
+        font-size: 16px;
+    }
+
+    .btn:hover {
+        background-color: #6F58C9;
+    }
+
+    .ref:hover {
+        color: #6F58C9;
+        cursor: pointer;
+    }
+    
+</style>
+<body>
+    <div id="content">
+        <div id="loginArea">
+            <div class="loginAreaElement">
+                <label for="login">Login:</label>
+                <input id="login" type="text">
+            </div>
+            <div class="loginAreaElement">
+                <label for="password">Password:</label>
+                <input id="password" type="password">
+            </div>
+            <div class="loginAreaElement registerEl">
+                <label for="password2">Repeat Password:</label>
+                <input id="password2" type="password">
+            </div>
+            <button id="registerBtn" class="loginAreaElement registerEl btn" onclick="onRegisterBtnClicked()">Register</button>
+            <button id="loginBtn" class="loginAreaElement nonRegisterEl btn" onclick="onLoginBtnClicked()">Log in</button>
+            <div class="loginAreaElement registerEl ref" onclick="onLoginClicked()">Login</div>
+            <div class="loginAreaElement nonRegisterEl ref" onclick="onRegisterClicked()">Register</div>
+        </div>
+    </div>
+</body>
+<script>
+    var nonRegisterEl = document.getElementsByClassName("nonRegisterEl");
+    var registerEl = document.getElementsByClassName("registerEl");
+
+    function setElDisplay(arr, val) {
+        for (let i = 0; i < arr.length; ++i) {
+            arr[i].style.display = val;
+        }
+    }
+
+    function onLoginClicked() {
+        setElDisplay(nonRegisterEl, "block");
+        setElDisplay(registerEl, "none");
+    }
+
+    function onRegisterClicked() {
+        setElDisplay(nonRegisterEl, "none");
+        setElDisplay(registerEl, "block");
+    }
+
+    function sendLogPassTo(href, login, password, onError) {
+        var xml = new XMLHttpRequest();
+        xml.open("POST", href + "?login=" + login + '&' + "password=" + password);
+        xml.send();
+        xml.onload = function () {
+            if (xml.status == 200) {
+                window.location.reload();
+            } else if (xml.status == 403) {
+                alert(onError);
+            }
+        }
+    }
+
+    function onRegisterBtnClicked() {
+        var login = document.getElementById("login").value;
+        var password = document.getElementById("password").value;
+        var password2 = document.getElementById("password2").value;
+        if (password != password2) {
+            alert("Passwords does not match");
+            return;
+        }
+
+        sendLogPassTo("register", login, password);
+    }
+
+    function onLoginBtnClicked() {
+        var login = document.getElementById("login").value;
+        var password = document.getElementById("password").value;
+        sendLogPassTo("login", login, password);
+    }
+</script>
+</html>
